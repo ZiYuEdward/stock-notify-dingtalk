@@ -16,17 +16,17 @@ export default (appInfo: EggAppInfo) => {
     port: 3306,
     username: 'root',
     password: 'czy666666',
-    database: 'breeze-default',
+    database: 'stock-record',
   };
 
   // add your special config in here
-  const bizConfig = {
-    sourceUrl: `https://github.com/eggjs/examples/tree/master/${appInfo.name}`,
+  const customConfig = {
+    stockApi: 'http://hq.sinajs.cn/list=', // 调用新浪股票接口
   };
 
   // the return config will combines to EggAppConfig
   return {
     ...config,
-    ...bizConfig,
+    ...customConfig,
   };
 };

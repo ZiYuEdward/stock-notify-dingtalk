@@ -3,9 +3,11 @@
 
 import 'egg';
 import ExportInit from '../../../app/model/init';
+import ExportRecord from '../../../app/model/record';
 
 declare module 'egg' {
   interface IModel {
     Init: ReturnType<typeof ExportInit>;
+    Record: ReturnType<typeof ExportRecord>;
   }
 }
