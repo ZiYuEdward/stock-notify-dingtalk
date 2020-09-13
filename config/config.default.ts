@@ -22,6 +22,7 @@ export default (appInfo: EggAppInfo) => {
   // add your special config in here
   const customConfig = {
     stockApi: 'http://hq.sinajs.cn/list=', // 调用新浪股票接口
+    dingtalkApi: 'https://oapi.dingtalk.com/robot/send?access_token=af73377d2fe8e49280aef13f9bb95f5000cad830636fa6420bdebf40cb39bbde',
   };
 
   // the return config will combines to EggAppConfig

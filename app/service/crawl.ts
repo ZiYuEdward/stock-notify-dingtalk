@@ -1,7 +1,8 @@
 
 import { Service } from 'egg';
-import axios from 'axios';
+import instance from '../http-request';
 
+// const iconv = require('iconv-lite'); // eslint-disable-line
 const dayjs = require('dayjs'); // eslint-disable-line
 
 export default class Crawl extends Service {
@@ -36,7 +37,7 @@ export default class Crawl extends Service {
     const codes = enableStockList.map(v => `${v.stockType}${v.stockCode}`).join(',');
     let stockStr = '';
     try {
-      const stockData = await axios.get(`${config.stockApi}${codes}`);
+      const stockData = await instance.get(`${config.stockApi}${codes}`);
       stockStr = stockData.data || '';
     } catch (e) {
       ctx.logger.error(`获取新浪股票api信息错误${e}`);
@@ -67,6 +68,7 @@ export default class Crawl extends Service {
       highestPrice, // 当天最高价
       lowestPrice, // 当天最低价
     ] = stockNumArr;
+
     // 当前价格涨跌幅
     const currentPricePercent = (((currentPrice - todayStartPrice) / todayStartPrice) * 100).toFixed(2);
     // 用户设置涨跌幅通知值
@@ -133,7 +135,7 @@ export default class Crawl extends Service {
     mobile,
     name,
   }) {
-    const { ctx } = this;
+    const { ctx, config } = this;
     let atList = '';
     if (mobile) {
       mobile.split(',').forEach(v => {
@@ -144,12 +146,13 @@ export default class Crawl extends Service {
       msgtype: 'text',
       text: {
         content: `
-        股票：${name} - ${stockCode}
-        当前涨跌幅：${type === 'rise' ? '涨' : '跌'}${currentPricePercent}
+        股票名称：${name} - ${stockCode}
+        当前涨跌幅：${type === 'rise' ? '涨' : '跌'}:${currentPricePercent}%
         当前价格：${currentPrice},
         开盘价：${todayStartPrice},
         当日最高价: ${highestPrice}
         当日最低价: ${lowestPrice}
+
         ${atList}
         `,
       },
@@ -158,7 +161,7 @@ export default class Crawl extends Service {
         isAtAll: false,
       },
     };
-    axios.post('https://oapi.dingtalk.com/robot/send?access_token=af73377d2fe8e49280aef13f9bb95f5000cad830636fa6420bdebf40cb39bbde', textBody).then(() => {
+    instance.post(config.dingtalkApi, textBody).then(() => {
       ctx.model.Notify.create({
         stockCode,
         stockType,
