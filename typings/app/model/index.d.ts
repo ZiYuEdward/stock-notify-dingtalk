@@ -2,12 +2,12 @@
 // Do not modify this file!!!!!!!!!
 
 import 'egg';
-import ExportInit from '../../../app/model/init';
+import ExportNotify from '../../../app/model/notify';
 import ExportRecord from '../../../app/model/record';
 
 declare module 'egg' {
   interface IModel {
-    Init: ReturnType<typeof ExportInit>;
+    Notify: ReturnType<typeof ExportNotify>;
     Record: ReturnType<typeof ExportRecord>;
   }
 }

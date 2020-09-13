@@ -1,10 +1,10 @@
 import { AutoIncrement, Column, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 @Table({
-  tableName: 'stock_config',
+  tableName: 'stock_notify',
 })
 
-export class RecordModel extends Model<RecordModel> {
+export class NotifyModel extends Model<NotifyModel> {
   @PrimaryKey
   @AutoIncrement
   @Column({
@@ -25,28 +25,22 @@ export class RecordModel extends Model<RecordModel> {
   stockType: string;
 
   @Column({
-    comment: '涨幅通知阶段，0-10,多阶段用,分割',
-    field: 'rise_percent',
+    comment: '通知时的涨跌幅',
+    field: 'trigger_percent',
   })
-  risePercent: string;
+  triggerPercent: string;
 
   @Column({
-    field: 'fall_percent',
-    comment: '下跌通知阶段',
+    comment: '是否重新通知',
+    field: 'repeat',
   })
-  fallPercent: string;
+  repeat: number;
 
   @Column({
-    field: 'mobile',
-    comment: '通知人手机号',
+    comment: '通知日期（日）',
+    field: 'record_time',
   })
-  mobile: string;
-
-  @Column({
-    comment: '是否启用',
-    field: 'stock_enable',
-  })
-  stockEnable: number;
+  recordTime: string;
 
   @Column({
     field: 'created_at',
@@ -59,4 +53,4 @@ export class RecordModel extends Model<RecordModel> {
   updated_at: Date;
 }
 
-export default () => RecordModel;
+export default () => NotifyModel;

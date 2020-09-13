@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "axios": "^0.20.0",
+    "dayjs": "^1.8.35",
     "egg": "^2.6.1",
     "egg-scripts": "^2.6.0",
     "egg-sequelize": "^5.2.2",

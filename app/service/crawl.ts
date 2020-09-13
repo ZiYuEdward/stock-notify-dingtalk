@@ -2,6 +2,7 @@
 import { Service } from 'egg';
 import axios from 'axios';
 
+const dayjs = require('dayjs'); // eslint-disable-line
 
 export default class Crawl extends Service {
   /**
@@ -47,8 +48,124 @@ export default class Crawl extends Service {
    * 通知端上
   */
   async notify(stockData = []) {
-    stockData.forEach(v => {
-      console.log(v, 'noti');
+    stockData.forEach(async (v: any) => {
+      v.id === 2 && await this.handleStockItem(v);
+    });
+  }
+
+  async handleStockItem(item) {
+    const { ctx } = this;
+    const recordTime = dayjs().format('YYYY-MM-DD');
+    const stockNumArr = item.d.split(',');
+    const { stockCode, stockType, risePercent, fallPercent, mobile } = item;
+
+    const [
+      name,
+      todayStartPrice, // 开盘价
+      ,
+      currentPrice, // 当前价格
+      highestPrice, // 当天最高价
+      lowestPrice, // 当天最低价
+    ] = stockNumArr;
+    // 当前价格涨跌幅
+    const currentPricePercent = (((currentPrice - todayStartPrice) / todayStartPrice) * 100).toFixed(2);
+    // 用户设置涨跌幅通知值
+    let risePercentArr = [];
+    let fallPercentArr = [];
+    if (risePercent) {
+      risePercentArr = risePercent.split(',').sort((a, b) => +a - +b);
+    }
+    if (fallPercent) {
+      fallPercentArr = fallPercent.split(',').sort((a, b) => +a - +b);
+    }
+    let triggerPercentArr = [];
+    let type = '';
+    if (+currentPricePercent >= 0) {
+      triggerPercentArr = risePercentArr;
+      type = 'rise';
+    } else {
+      triggerPercentArr = fallPercentArr;
+      type = 'fall';
+    }
+    for (let i = 0; i < triggerPercentArr.length; i++) {
+      const v = triggerPercentArr[i];
+      const triggerPercent = String(v);
+      if (Math.abs(+currentPricePercent) < +triggerPercent) {
+        continue;
+      }
+      const notifyRecord = await ctx.model.Notify.findOne({
+        where: {
+          triggerPercent,
+          recordTime,
+        },
+      });
+      if (!notifyRecord || notifyRecord.repeat) {
+        this.triggerDingTalk({
+          triggerPercent,
+          recordTime,
+          todayStartPrice, // 开盘价
+          currentPrice, // 当前价格
+          currentPricePercent,
+          highestPrice, // 当天最高价
+          lowestPrice, // 当天最低价
+          type,
+          stockCode,
+          stockType,
+          mobile,
+          name,
+        });
+        break;
+      }
+    }
+  }
+
+  async triggerDingTalk({
+    triggerPercent,
+    recordTime,
+    todayStartPrice, // 开盘价
+    currentPrice, // 当前价格
+    currentPricePercent,
+    highestPrice, // 当天最高价
+    lowestPrice, // 当天最低价
+    type,
+    stockCode,
+    stockType,
+    mobile,
+    name,
+  }) {
+    const { ctx } = this;
+    let atList = '';
+    if (mobile) {
+      mobile.split(',').forEach(v => {
+        atList += `@${v}`;
+      });
+    }
+    const textBody = {
+      msgtype: 'text',
+      text: {
+        content: `
+        股票：${name} - ${stockCode}
+        当前涨跌幅：${type === 'rise' ? '涨' : '跌'}${currentPricePercent}
+        当前价格：${currentPrice},
+        开盘价：${todayStartPrice},
+        当日最高价: ${highestPrice}
+        当日最低价: ${lowestPrice}
+        ${atList}
+        `,
+      },
+      at: {
+        atMobiles: mobile ? mobile.split(',') : [],
+        isAtAll: false,
+      },
+    };
+    axios.post('https://oapi.dingtalk.com/robot/send?access_token=af73377d2fe8e49280aef13f9bb95f5000cad830636fa6420bdebf40cb39bbde', textBody).then(() => {
+      ctx.model.Notify.create({
+        stockCode,
+        stockType,
+        triggerPercent,
+        repeat: 0,
+        recordTime,
+      });
     });
   }
 }

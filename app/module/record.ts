@@ -4,4 +4,5 @@ export interface RecordModule {
   stockType: string;
   risePercent: string;
   fallPercent: string;
+  mobile?: string;
 }
