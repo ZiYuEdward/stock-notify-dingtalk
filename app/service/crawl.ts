@@ -50,7 +50,7 @@ export default class Crawl extends Service {
   */
   async notify(stockData = []) {
     stockData.forEach(async (v: any) => {
-      v.id === 2 && await this.handleStockItem(v);
+      await this.handleStockItem(v);
     });
   }
 
@@ -63,14 +63,14 @@ export default class Crawl extends Service {
     const [
       name,
       todayStartPrice, // 开盘价
-      ,
+      yesterDayEndPrice,
       currentPrice, // 当前价格
       highestPrice, // 当天最高价
       lowestPrice, // 当天最低价
     ] = stockNumArr;
 
     // 当前价格涨跌幅
-    const currentPricePercent = (((currentPrice - todayStartPrice) / todayStartPrice) * 100).toFixed(2);
+    const currentPricePercent = (((currentPrice - yesterDayEndPrice) / yesterDayEndPrice) * 100).toFixed(2);
     // 用户设置涨跌幅通知值
     let risePercentArr = [];
     let fallPercentArr = [];
@@ -99,6 +99,7 @@ export default class Crawl extends Service {
         where: {
           triggerPercent,
           recordTime,
+          stockCode,
         },
       });
       if (!notifyRecord || notifyRecord.repeat) {
@@ -146,7 +147,7 @@ export default class Crawl extends Service {
       msgtype: 'text',
       text: {
         content: `
-        股票名称：${name} - ${stockCode}
+        名称：${name} - ${stockCode}
         当前涨跌幅：${type === 'rise' ? '涨' : '跌'}:${currentPricePercent}%
         当前价格：${currentPrice},
         开盘价：${todayStartPrice},
