@@ -103,7 +103,7 @@ export default class Crawl extends Service {
         },
       });
       if (!notifyRecord || notifyRecord.repeat) {
-        this.triggerDingTalk({
+        await this.triggerDingTalk({
           triggerPercent,
           recordTime,
           todayStartPrice, // 开盘价
@@ -162,14 +162,13 @@ export default class Crawl extends Service {
         isAtAll: false,
       },
     };
-    instance.post(config.dingtalkApi, textBody).then(() => {
-      ctx.model.Notify.create({
-        stockCode,
-        stockType,
-        triggerPercent,
-        repeat: 0,
-        recordTime,
-      });
+    await ctx.model.Notify.create({
+      stockCode,
+      stockType,
+      triggerPercent,
+      repeat: 0,
+      recordTime,
     });
+    await instance.post(config.dingtalkApi, textBody);
   }
 }
