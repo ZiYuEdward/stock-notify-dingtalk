@@ -2,7 +2,6 @@ import { EggAppConfig, EggAppInfo, PowerPartial } from 'egg';
 
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
-
   // override config from framework / plugin
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1598436511457_8866';
@@ -17,6 +16,7 @@ export default (appInfo: EggAppInfo) => {
     username: 'root',
     password: 'czy666666',
     database: 'stock-record',
+    logging: () => {}, //eslint-disable-line
   };
 
   // add your special config in here
